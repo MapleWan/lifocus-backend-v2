@@ -96,6 +96,7 @@ class SingleProjectResource(Resource):
                 if project:
                     # project.delete_project()
                     project.is_deleted = True
+                    project.delete_time = datetime.datetime.now()
                     project.update_project()
                     user = User.get_user_by_id(get_jwt_identity())
                     del_user_project_dir(user.username, project.name)
