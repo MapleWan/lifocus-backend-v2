@@ -28,7 +28,7 @@ class RegisterResource(Resource):
                 return {'message': REGISTER_ERROR_MESSAGE["EMAIL_REPEATED"]}, 400
             
             salt, saved_password = hash_password(password)
-            user = User(username=username, email=email, salt=salt, password=saved_password)
+            user = User(username=username, nickname=username, email=email, salt=salt, password=saved_password)
             user.add_user()
             return {'code' : 200, 'message': '注册成功', 'data': user.dict()}, 200
 
