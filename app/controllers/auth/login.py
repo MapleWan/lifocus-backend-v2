@@ -41,7 +41,6 @@ class LoginResource(Resource):
             args = parser.parse_args()
 
             user = User.get_user_by_username(args['username'])
-            print(user)
             if not user:
                 return {'code': 401, 'message': LOGIN_ERROR_MESSAGE['USER_NOT_FOUND']}, 401
             if not verify_password(user.password, user.salt, args['password']):
