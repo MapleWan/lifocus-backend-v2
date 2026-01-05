@@ -18,6 +18,9 @@ class Project(db.Model):
     create_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
     update_time = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now(), comment='更新时间')
     
+    # 一个用户有多个项目
+    user = db.relationship('User', back_populates='projects', lazy=True)
+
     # 打印项目信息
     def dict(self):
         return {
@@ -31,7 +34,8 @@ class Project(db.Model):
             'status': self.status,
             'is_deleted': self.is_deleted,
             'create_time': format_datetime_to_string(self.create_time),
-            'update_time': format_datetime_to_string(self.update_time)
+            'update_time': format_datetime_to_string(self.update_time),
+            # 'user': self.user.dict()
         }
     
     # 新增项目

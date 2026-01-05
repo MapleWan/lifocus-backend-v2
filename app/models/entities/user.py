@@ -16,6 +16,9 @@ class User(db.Model):
     create_time = db.Column(db.DateTime, nullable=False, default=datetime.now(), comment='创建时间')
     update_time = db.Column(db.DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now(), comment='更新时间')
 
+    # 一个用户有多个项目
+    projects = db.relationship('Project', back_populates='user', lazy=True)
+
     # 打印用户信息
     def dict(self):
         return {

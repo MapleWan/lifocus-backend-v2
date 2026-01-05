@@ -39,3 +39,12 @@ project_ns.add_resource(AddProjectResource, '')
 project_ns.add_resource(UserProjectResource, '/user-project')
 
 api.add_namespace(project_ns)
+
+
+# 目录（属于项目）
+category_ns = Namespace('category', description='目录相关接口', path='/category')
+from .category import CategoryResource, AddCategoruResource
+category_ns.add_resource(CategoryResource, '/<string:category_id>')
+category_ns.add_resource(AddCategoruResource, '')
+
+api.add_namespace(category_ns)

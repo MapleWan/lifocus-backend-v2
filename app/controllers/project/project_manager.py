@@ -1,7 +1,6 @@
 import os
 import datetime
 from flask_restx import Resource, reqparse
-from sqlalchemy.engine import default
 from app.controllers import project_ns
 from app.models import Project, User
 
