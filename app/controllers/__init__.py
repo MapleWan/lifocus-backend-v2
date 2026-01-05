@@ -40,7 +40,6 @@ project_ns.add_resource(UserProjectResource, '/user-project')
 
 api.add_namespace(project_ns)
 
-
 # 目录（属于项目）
 category_ns = Namespace('category', description='目录相关接口', path='/category')
 from .category import CategoryResource, AddCategoruResource
@@ -48,3 +47,11 @@ category_ns.add_resource(CategoryResource, '/<string:category_id>')
 category_ns.add_resource(AddCategoruResource, '')
 
 api.add_namespace(category_ns)
+
+# 文章
+article_ns = Namespace('article', description='文章相关接口', path='/article')
+from .article import ArticleResource, AddArticleResource
+article_ns.add_resource(ArticleResource, '/<string:article_id>')
+article_ns.add_resource(AddArticleResource, '')
+
+api.add_namespace(article_ns)

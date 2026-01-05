@@ -11,7 +11,6 @@ class Project(db.Model):
     name = db.Column(db.String(64), nullable=False, comment='项目名称')
     icon = db.Column(db.String(255), nullable=True, comment='项目图标')
     description = db.Column(db.String(255), nullable=True, comment='项目描述')
-    folder = db.Column(db.String(255), nullable=True, comment='项目文件存储文件夹')
     status = db.Column(db.String(64), nullable=False, default='ACTIVE', comment='项目状态')
     is_deleted = db.Column(db.Boolean, nullable=False, default=False, comment='是否删除项目')
     delete_time = db.Column(db.DateTime, nullable=True, comment='删除时间')
@@ -30,7 +29,6 @@ class Project(db.Model):
             'name': self.name,
             'icon': self.icon,
             'description': self.description,
-            'folder': self.folder,
             'status': self.status,
             'is_deleted': self.is_deleted,
             'create_time': format_datetime_to_string(self.create_time),

@@ -2,12 +2,12 @@ import os
 import datetime
 from flask_restx import Resource, reqparse
 from app.controllers import project_ns
-from app.models import Project, User
+from app.models import Project, User, Category
 
 from app.enums import PROJECT_ERROR_MESSAGE, PROJECT_SUCCESS_MESSAGE, PROJECT_TYPE, PROJECT_STATUS
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils import del_user_project_dir, make_user_project_dir
-from app.utils.enum_check import check_enum
+from app.utils import check_enum
 
 from .project_api_model import add_project_model, project_list_response_model, project_page_response_model, update_project_model, project_response_model
 
@@ -49,7 +49,6 @@ class SingleProjectResource(Resource):
                     parser.add_argument('name', type=str, required=False)
                     parser.add_argument('icon', type=str, required=False)
                     parser.add_argument('description', type=str, required=False)
-                    parser.add_argument('folder', type=str, required=False)
                     parser.add_argument('status', type=str, required=False)
 
                     args = parser.parse_args()
@@ -66,7 +65,7 @@ class SingleProjectResource(Resource):
                     origin_project_name = project.name
                     # 简化更新逻辑，使用循环更新属性
                     update_fields = ['type', 'name', 'icon',
-                                     'description', 'folder', 'status']
+                                     'description', 'status']
                     for field in update_fields:
                         if args[field]:  # 只有当参数存在且非空时才更新
                             setattr(project, field, args[field])
@@ -97,6 +96,8 @@ class SingleProjectResource(Resource):
                     project.is_deleted = True
                     project.delete_time = datetime.datetime.now()
                     project.update_project()
+
+                    Category.soft_delete_by_project_id(project_id)
                     user = User.get_user_by_id(get_jwt_identity())
                     del_user_project_dir(user.username, project.name)
                     return {'code': 200, 'message': PROJECT_SUCCESS_MESSAGE['PROJECT_DELETE_SUCCESS']}, 200
@@ -125,7 +126,6 @@ class AddProjectResource(Resource):
                 parser.add_argument('name', type=str, required=True)
                 parser.add_argument('icon', type=str, required=False)
                 parser.add_argument('description', type=str, required=False)
-                # parser.add_argument('folder', type=str, required=False)
                 parser.add_argument('status', type=str, required=True)
                 args = parser.parse_args()
             except Exception as e:
@@ -140,7 +140,6 @@ class AddProjectResource(Resource):
                 name=args['name'],
                 icon=args['icon'],
                 description=args['description'],
-                folder= os.path.join(os.path.expanduser('~'), 'lifocus_data', user.username, args['name']),
                 status=args['status']
             )
             project.add_project()

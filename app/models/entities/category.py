@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from app.extension import db
 from app.utils import format_datetime_to_string
 
@@ -12,11 +11,12 @@ class Category(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True, comment='父目录ID', )  # 自引用外键，nullable=True表示可以为空，表示一个目录可以没有父目录
     icon = db.Column(db.String(255), nullable=True, comment='目录图标')
     description = db.Column(db.String(255), nullable=True, comment='目录描述')
-    folder = db.Column(db.String(255), nullable=True, comment='目录文件存储文件夹')
     is_deleted = db.Column(db.Boolean, nullable=False, default=False, comment='是否删除目录')
     delete_time = db.Column(db.DateTime, nullable=True, comment='删除时间')
     create_time = db.Column(db.DateTime, default=datetime.now(), comment='创建时间')
     update_time = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now(), comment='更新时间')
+
+    articles = db.relationship('Article', back_populates='category', lazy=True)
 
     # 自关联：子目录
     '''
@@ -48,7 +48,6 @@ class Category(db.Model):
             'parent_id': self.parent_id,
             'icon': self.icon,
             'description': self.description,
-            'folder': self.folder,
             'is_deleted': self.is_deleted,
             'delete_time': format_datetime_to_string(self.delete_time) if self.delete_time else None,
             'create_time': format_datetime_to_string(self.create_time),
@@ -57,7 +56,7 @@ class Category(db.Model):
         }
     
     @classmethod
-    def add_category(cls, project_id, name, parent_id=None, icon=None, description=None, folder=None):
+    def add_category(cls, project_id, name, parent_id=None, icon=None, description=None):
         """
         创建目录
         :param project_id: 项目ID（UUID字符串）
@@ -90,8 +89,7 @@ class Category(db.Model):
                 name=name,
                 parent_id=parent_id,
                 icon=icon,
-                description=description,
-                folder=folder
+                description=description
             )
             db.session.add(category)
             db.session.commit()
@@ -128,7 +126,7 @@ class Category(db.Model):
 
         return query.order_by(cls.create_time.asc()).all()
 
-    def update_category(self, name=None, parent_id=None, icon=None, description=None, folder=None):
+    def update_category(self, name=None, parent_id=None, icon=None, description=None):
         """
         更新目录信息
         :return: (success: bool, error_msg: str)
@@ -163,7 +161,6 @@ class Category(db.Model):
         if parent_id is not None: self.parent_id = parent_id
         if icon is not None: self.icon = icon
         if description is not None: self.description = description
-        if folder is not None: self.folder = folder
 
         try:
             db.session.commit()
@@ -198,6 +195,8 @@ class Category(db.Model):
             def _delete_recursive(cat):
                 cat.is_deleted = True
                 cat.delete_time = datetime.now()
+                for article in cat.articles:
+                    article.soft_delete_article()
                 for child in cat.children:
                     _delete_recursive(child)
 
@@ -207,6 +206,16 @@ class Category(db.Model):
         except Exception as e:
             db.session.rollback()
             return False, str(e)
+
+    @classmethod
+    def soft_delete_by_project_id(cls, project_id):
+        """
+        根据项目ID软删除项目下所有目录（及其所有子目录）
+        """
+        all_categories = cls.query.filter_by(project_id=project_id).all()
+        for category in all_categories:
+            category.soft_delete()
+        return True, "删除成功"
 
     @classmethod
     def get_tree(cls, project_id):
@@ -246,15 +255,33 @@ class Category(db.Model):
         for cat in all_categories:
             if cat.parent_id is None:
                 node = cat.dict()
+                # 计算完整路径
+                node['full_path'] = cat._get_full_path(cat_map)
                 if hasattr(cat, '_children_list'):
                     node['children'] = cat._children_list
                 result.append(_clean(node))
 
         return result
 
+    def _get_full_path(self, cat_map):
+        """获取从根目录到当前目录的完整路径"""
+        path_parts = []
+        current = self
+        
+        while current is not None:
+            path_parts.insert(0, current.name)  # 从根开始添加
+            if current.parent_id is not None:
+                current = cat_map.get(current.parent_id)
+            else:
+                current = None
+        
+        return '/'.join(path_parts)
+
     def _to_tree_node(self, cat_map):
         """辅助：生成树节点（包含递归子节点）"""
         node = self.dict()
+        # 添加完整路径信息
+        node['full_path'] = self._get_full_path(cat_map)
         children = [
             child._to_tree_node(cat_map)
             for child in self.children
