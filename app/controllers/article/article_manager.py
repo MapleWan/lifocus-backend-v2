@@ -163,7 +163,8 @@ class CategoryArticleResource(Resource):
                 parse.add_argument('order_by', type=str, default='update_time', required=False, help='文章排序字段')
                 parse.add_argument('order_direction', type=str, default='desc', required=False, help='文章排序方向')
                 args = parse.parse_args()
-                args['is_share'] = False if args['is_shared'] == 'false' else True
+                if args['is_shared']:
+                    args['is_shared'] = False if args['is_shared'] == 'false' else True
                 if not args['category_id']:
                     project_id = request.headers.get('X-Project-Id')
                     if not project_id:

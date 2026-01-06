@@ -65,3 +65,12 @@ dict_ns.add_resource(AddDictResource, '')
 dict_ns.add_resource(UserDictResource, '/user-dict')
 
 api.add_namespace(dict_ns)
+
+# 时间线
+timeline_ns = Namespace('timeline', description='时间线相关接口', path='/timeline')
+from .timeline import SingleTimelineResource, AddTimelineResource, UserTimelineResource
+timeline_ns.add_resource(SingleTimelineResource, '/<string:timeline_id>')
+timeline_ns.add_resource(AddTimelineResource, '')
+timeline_ns.add_resource(UserTimelineResource, '/user-timeline')
+
+api.add_namespace(timeline_ns)

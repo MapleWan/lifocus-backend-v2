@@ -3,3 +3,4 @@ from .project import Project
 from .category import Category
 from .article import Article
 from .dict import Dict
+from .timeline import Timeline
