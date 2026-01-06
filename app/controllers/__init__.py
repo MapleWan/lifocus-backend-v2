@@ -50,8 +50,9 @@ api.add_namespace(category_ns)
 
 # 文章
 article_ns = Namespace('article', description='文章相关接口', path='/article')
-from .article import ArticleResource, AddArticleResource
+from .article import ArticleResource, AddArticleResource, CategoryArticleResource
 article_ns.add_resource(ArticleResource, '/<string:article_id>')
 article_ns.add_resource(AddArticleResource, '')
+article_ns.add_resource(CategoryArticleResource, '/category-article')
 
 api.add_namespace(article_ns)

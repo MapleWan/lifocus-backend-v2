@@ -3,6 +3,8 @@ from datetime import datetime
 
 from app.enums.article_enum import ARTICLE_ERROR_MESSAGE
 from app.extension import db
+from app.models.entities.category import Category
+from app.models.entities.project import Project
 from app.utils import format_datetime_to_string
 
 class Article(db.Model):
@@ -74,3 +76,93 @@ class Article(db.Model):
     def get_article_by_title_and_category_id(article_title, category_id):
         return Article.query.filter_by(title=article_title, category_id=category_id, is_deleted=False).first()
     
+    # 获取项目某一目录下的所有文章列表，带查询条件（分页接口）
+    '''
+        :param category_id: 目录id
+        :param query_condition: 查询条件 
+            {
+                "title": #文章标题
+                "type": "NOTE" #文章类型, NOTE DAILY
+                "status": "ACTIVE" # 文章状态 ACTIVE ARCHIVED
+                "is_shared": false, # 是否分享
+                "create_start_time": "2025-12-17 00:00:00",
+                "create_end_time": "2025-12-17 00:00:00",
+                "update_start_time": "2025-12-17 00:00:00",
+                "update_end_time: "2025-12-17 00:00:00",
+                "is_query_page": true, # 是否使用分页查询
+                "page_no": 1, # page: 页码
+                "page_size": 10, # 每页数量
+                "order_by": "title", # 排序字段: title, create_time, update_time
+                "order_direction": "asc" # 排序方向: asc, desc
+            }
+        :return 包含文章列表、总数和总页数的字典
+    '''
+    @classmethod
+    def get_articles_by_category_id(cls, category_id, project_id = None, query_condition = {}):
+        if category_id:
+            # 只查询当前目录下的文章，没有递归查询子目录下的文章
+            # query = cls.query.filter_by(category_id=category_id, is_deleted=False)
+
+            # 获取指定目录及其所有子目录的ID
+            def get_all_subcategory_ids(category_id):
+                subcategory_ids = [category_id]
+                # 获取当前目录的子目录
+                children = Category.query.filter_by(parent_id=category_id, is_deleted=False).all()
+                for child in children:
+                    # 递归获取子目录的子目录
+                    subcategory_ids.extend(get_all_subcategory_ids(child.id))
+                return subcategory_ids
+            # 获取所有相关的目录ID
+            all_category_ids = get_all_subcategory_ids(category_id)
+            # 查询这些目录下的所有文章
+            query = cls.query.filter(cls.category_id.in_(all_category_ids), cls.is_deleted == False)
+        
+        else:
+            query = cls.query.filter_by(is_deleted=False).join(Category, cls.category_id == Category.id).filter(Category.project_id == project_id).filter(Category.is_deleted == False)
+            # query = Project.query.filter_by(id=project_id, is_deleted=False).join(Category, Project.id == Category.project_id).filter(Category.is_deleted == False).join(cls, Category.id == cls.category_id).filter(cls.is_deleted == False)
+        exact_match_fields = ['type', 'status', 'is_shared']
+        fuzzy_match_fields = ['title']
+        start_scope_match_fields = ['create_start_time', 'update_start_time']
+        end_scope_match_fields = ['create_end_time', 'update_end_time']
+
+        if query_condition:
+            for field in query_condition:
+                if query_condition[field] == None: continue
+                if field in exact_match_fields:
+                    query = query.filter(getattr(cls, field) == query_condition[field])
+                elif field in fuzzy_match_fields:
+                    query = query.filter(getattr(cls, field).like(f'%{query_condition[field]}%'))
+                elif field in start_scope_match_fields:
+                    query = query.filter(getattr(cls, field.replace('start_time', 'time')) >= query_condition[field])
+                elif field in end_scope_match_fields:
+                    query = query.filter(getattr(cls, field.replace('end_time', 'time')) <= query_condition[field])
+
+        # 添加排序功能
+        if query_condition and query_condition.get('order_by') is not None and query_condition.get('order_direction') is not None:
+            order_by = query_condition.get('order_by', 'update_time')  # 默认按更新时间排序
+            order_direction = query_condition.get('order_direction', 'desc')  # 默认降序
+            
+            # 验证排序字段是否有效
+            valid_order_fields = ['title', 'create_time', 'update_time']
+            if order_by in valid_order_fields:
+                order_attr = getattr(cls, order_by)
+                if order_direction.lower() == 'desc':
+                    query = query.order_by(order_attr.desc())
+                else:
+                    query = query.order_by(order_attr.asc())
+        
+        # 添加分页功能
+        if query_condition and query_condition.get('is_query_page'):
+            page_no = query_condition.get('page_no', 1)
+            page_size = query_condition.get('page_size', 10)
+            query = query.paginate(page=page_no, per_page=page_size, error_out=False)
+            articles = query.items
+            total = query.total
+            pages = query.pages
+            return {
+                'data': articles,
+                'total': total,
+                'pages': pages
+            }
+        else:
+            return query.all()

@@ -1,1 +1,1 @@
-from .article_manager import ArticleResource, AddArticleResource
+from .article_manager import ArticleResource, AddArticleResource, CategoryArticleResource

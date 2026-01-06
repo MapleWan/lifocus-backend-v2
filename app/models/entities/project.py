@@ -31,6 +31,7 @@ class Project(db.Model):
             'description': self.description,
             'status': self.status,
             'is_deleted': self.is_deleted,
+            'delete_time': format_datetime_to_string(self.delete_time) if self.delete_time else None,
             'create_time': format_datetime_to_string(self.create_time),
             'update_time': format_datetime_to_string(self.update_time),
             # 'user': self.user.dict()
@@ -116,7 +117,6 @@ class Project(db.Model):
             # 验证排序字段是否有效
             valid_order_fields = ['name', 'create_time', 'update_time']
             if order_by in valid_order_fields:
-                print(order_by)
                 order_attr = getattr(Project, order_by)
                 if order_direction.lower() == 'desc':
                     query = query.order_by(order_attr.desc())

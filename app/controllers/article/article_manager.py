@@ -4,7 +4,7 @@ from app.models import Article, User, Project
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.controllers import article_ns
 from app.utils import check_enum, rename_article, del_article_from_disk, save_article_to_disk, valid_password, hash_password, verify_password_with_salt
-from .article_api_model import article_with_content_response_model, article_no_content_response_model
+from .article_api_model import article_with_content_response_model, article_no_content_response_model, article_no_content_page_response_model
 from datetime import datetime
 import os
 
@@ -139,5 +139,78 @@ class AddArticleResource(Resource):
                 return {'code': 200, 'message': ARTICLE_SUCCESS_MESSAGE['CREATE_SUCCESS'], 'data': article}, 200
             else:
                 return {'code': 400, 'message': res}, 400
+        except Exception as e:
+            return {'code': 500, 'message': ARTICLE_ERROR_MESSAGE['COMMON_ERROR'] + ': ' + str(e)}, 500
+
+
+class CategoryArticleResource(Resource):
+    @jwt_required()
+    @article_ns.doc(description='获取分类下文章列表')
+    @article_ns.marshal_with(article_no_content_response_model)
+    def get(self):
+        try:
+            try:
+                parse = reqparse.RequestParser()
+                parse.add_argument('category_id', type=int, required=False, help='分类ID')
+                parse.add_argument('type', type=str, required=False, help='文章类型')
+                parse.add_argument('title', type=str, required=False, help='文章标题')
+                parse.add_argument('status', type=str, required=False, help='文章状态')
+                parse.add_argument('is_shared', type=str, required=False, help='文章是否共享')
+                parse.add_argument('create_start_time', type=str, required=False, help='文章创建开始时间')
+                parse.add_argument('create_end_time', type=str, required=False, help='文章创建结束时间')
+                parse.add_argument('update_start_time', type=str, required=False, help='文章更新开始时间')
+                parse.add_argument('update_end_time', type=str, required=False, help='文章更新结束时间')
+                parse.add_argument('order_by', type=str, default='update_time', required=False, help='文章排序字段')
+                parse.add_argument('order_direction', type=str, default='desc', required=False, help='文章排序方向')
+                args = parse.parse_args()
+                args['is_share'] = False if args['is_shared'] == 'false' else True
+                if not args['category_id']:
+                    project_id = request.headers.get('X-Project-Id')
+                    if not project_id:
+                        return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['PROJECT_ID_EMPTY_ERROR']}, 400
+            except Exception as e:
+                raise Exception(ARTICLE_ERROR_MESSAGE['PARAM_ERROR'])
+            articles = Article.get_articles_by_category_id(args['category_id'], project_id if not args['category_id'] else None, args)
+            return {'code': 200, 'message': ARTICLE_SUCCESS_MESSAGE['LIST_SUCCESS'], 'data': articles}, 200
+        except Exception as e:
+            return {'code': 500, 'message': ARTICLE_ERROR_MESSAGE['COMMON_ERROR'] + ': ' + str(e)}, 500
+
+    @jwt_required()
+    @article_ns.doc(description='获取分类下文章列表')
+    @article_ns.marshal_with(article_no_content_page_response_model)
+    def post(self):
+        try:
+            try:
+                parse = reqparse.RequestParser()
+                parse.add_argument('category_id', type=int, required=False, help='分类ID')
+                parse.add_argument('type', type=str, required=False, help='文章类型')
+                parse.add_argument('title', type=str, required=False, help='文章标题')
+                parse.add_argument('status', type=str, required=False, help='文章状态')
+                parse.add_argument('is_shared', type=bool, required=False, help='文章是否共享')
+                parse.add_argument('create_start_time', type=str, required=False, help='文章创建开始时间')
+                parse.add_argument('create_end_time', type=str, required=False, help='文章创建结束时间')
+                parse.add_argument('update_start_time', type=str, required=False, help='文章更新开始时间')
+                parse.add_argument('update_end_time', type=str, required=False, help='文章更新结束时间')
+                parse.add_argument('order_by', type=str, default='update_time', required=False, help='文章排序字段')
+                parse.add_argument('order_direction', type=str, default='desc', required=False, help='文章排序方向')
+
+                parse.add_argument('page_no', type=int, default=1, required=False, help='页码')
+                parse.add_argument('page_size', type=int, default=10, required=False, help='页大小')
+                args = parse.parse_args()
+                args['is_query_page'] = True
+                if not args['category_id']:
+                    project_id = request.headers.get('X-Project-Id')
+                    if not project_id:
+                        return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['PROJECT_ID_EMPTY_ERROR']}, 400
+            except Exception as e:
+                raise Exception(ARTICLE_ERROR_MESSAGE['PARAM_ERROR'])
+            page_res = Article.get_articles_by_category_id(args['category_id'], project_id if not args['category_id'] else None, args)
+            return {'code': 200, 'message': ARTICLE_SUCCESS_MESSAGE['LIST_SUCCESS'], 'data': {
+                'page_no': args['page_no'],
+                'page_size': args['page_size'],
+                'pages': page_res['pages'],
+                'total': page_res['total'],
+                'data': page_res['data']
+            }}, 200
         except Exception as e:
             return {'code': 500, 'message': ARTICLE_ERROR_MESSAGE['COMMON_ERROR'] + ': ' + str(e)}, 500

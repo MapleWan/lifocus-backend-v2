@@ -218,6 +218,10 @@ class Category(db.Model):
         return True, "删除成功"
 
     @classmethod
+    def get_all_by_project_id(cls, project_id):
+        return cls.query.filter_by(project_id=project_id, is_deleted=False).all()
+
+    @classmethod
     def get_tree(cls, project_id):
         """
         获取项目下的完整目录树（仅未删除的）

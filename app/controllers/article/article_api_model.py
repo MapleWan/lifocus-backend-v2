@@ -37,3 +37,17 @@ article_no_content_response_model = article_ns.model('ArticleNoContentResponse',
     'message': fields.String(description='提示信息'),
     'data': fields.Nested(article_no_content_model, allow_null=True)
 })
+
+article_no_content_page_model = article_ns.model('ArticleNoContentPage', {
+    'page_no': fields.Integer(description='页码'),
+    'page_size': fields.Integer(description='页大小'),
+    'pages': fields.Integer(description='总页数'),
+    'total': fields.Integer(description='总记录数'),
+    'data': fields.List(fields.Nested(article_no_content_model), description='文章数据列表', allow_null=True)
+})
+
+article_no_content_page_response_model = article_ns.model('ArticleNoContentPageResponse', {
+    'code': fields.Integer(description='状态码'),
+    'message': fields.String(description='提示信息'),
+    'data': fields.Nested(article_no_content_page_model, allow_null=True)
+})

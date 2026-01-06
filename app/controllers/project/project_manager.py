@@ -172,7 +172,6 @@ class UserProjectResource(Resource):
                 args = parse.parse_args()
             except Exception as e:
                 raise Exception(PROJECT_ERROR_MESSAGE['PROJECT_PARAM_ERROR'])
-            print(args)
             projects = Project.get_projects_by_user_id(current_user_id, args)
             return {'code': 200, 'message': '查询成功', 'data': projects}, 200
         except Exception as e:
