@@ -3,7 +3,7 @@ from flask_restx import Resource, reqparse
 from app.models import Article, User, Project
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.controllers import article_ns
-from app.utils import check_enum, rename_article, del_article_from_disk, save_article_to_disk
+from app.utils import check_enum, rename_article, del_article_from_disk, save_article_to_disk, valid_password, hash_password, verify_password_with_salt
 from .article_api_model import article_with_content_response_model, article_no_content_response_model
 from datetime import datetime
 import os
@@ -55,15 +55,20 @@ class ArticleResource(Resource):
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['ALREADY_TITLE_EXIST']}, 400
 
             origin_article_title = article.title
-            update_fields = ['category_id', 'category_full_path', 'type', 'title', 'content', 'status', 'is_shared', 'share_password']
+            update_fields = ['category_id', 'type', 'title', 'content', 'status', 'is_shared', 'share_password']
             for field in update_fields:
-                if field in args:
+                if field in args and args[field] != None:
+                    if field == 'share_password':
+                        if not valid_password(args['share_password']):
+                            raise Exception(ARTICLE_ERROR_MESSAGE['PASSWORD_FORMAT_ERROR'])
+                        salt, password = hash_password(args['share_password'])
+                        args['share_password'] = salt + password
                     setattr(article, field, args[field])
             article.update_time = datetime.now()
             is_success, res = article.update_article()
             if is_success:
                 del_article_from_disk(current_user.username, current_project.name, args['category_full_path'], origin_article_title)
-                save_article_to_disk(current_user.username, current_project.name, args['category_full_path'], args['title'], args['content'])
+                save_article_to_disk(current_user.username, current_project.name, args['category_full_path'], args['title'] if args['title'] else article.title, args['content'] if args['content'] else article.content)
                 return {'code': 200, 'message': ARTICLE_SUCCESS_MESSAGE['UPDATE_SUCCESS'], 'data': article}, 200
             else:
                 return {'code': 400, 'message': res}, 400

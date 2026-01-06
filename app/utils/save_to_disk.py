@@ -65,7 +65,7 @@ def save_article_to_disk(user_name, project_name, category_path, article_title, 
     if not os.path.exists(category_dir):
         os.makedirs(category_dir)
     file_path = os.path.join(category_dir, article_title) + '.md'
-    print(file_path, "----保存")
+    # print(file_path, "----保存")
     with open(file_path, 'w') as f:
         f.write(article_content)
     return True
@@ -75,7 +75,7 @@ def del_article_from_disk(user_name, project_name, category_path, article_title)
     从磁盘删除文章
     """
     article_path = os.path.join(user_path, user_name, project_name, category_path, article_title) + '.md'
-    print(article_path, "----删除")
+    # print(article_path, "----删除")
 
     if os.path.exists(article_path):
         os.remove(article_path)

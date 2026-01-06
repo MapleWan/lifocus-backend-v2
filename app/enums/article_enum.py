@@ -12,6 +12,7 @@ ARTICLE_ERROR_MESSAGE = {
     'CONTENT_EMPTY_ERROR': '文章内容不能为空',
     'TYPE_STATUS_ERROR': '文章类型或状态错误',
     'PARAM_ERROR': '文章参数错误',
+    'PASSWORD_FORMAT_ERROR': '密码格式错误，必须包含字母和数字，且长度不少于8',
     'COMMON_ERROR': '系统错误',
 }
 

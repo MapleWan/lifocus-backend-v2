@@ -1,7 +1,6 @@
 import secrets
 import hashlib
 import re
-from app.enums import LOGIN_ERROR_MESSAGE
 
 password_pattern = r"^(?=.*[a-zA-Z])(?=.*\d).{8,}$"
 
@@ -27,3 +26,8 @@ def hash_password(password):
 def verify_password(stored_password, salt, provided_password):
     hash_attempt = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt.encode('utf-8'), 8070)
     return hash_attempt.hex() == stored_password
+
+def verify_password_with_salt(stored_password_with_salt, provided_password):
+    salt = stored_password_with_salt[:32]
+    stored_password = stored_password_with_salt[32:]
+    return verify_password(stored_password, salt, provided_password)

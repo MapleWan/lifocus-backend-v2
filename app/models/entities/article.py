@@ -16,7 +16,7 @@ class Article(db.Model):
     is_deleted = db.Column(db.Boolean, nullable=True, default=False, comment='是否删除文章')
     delete_time = db.Column(db.DateTime, nullable=True, comment='删除时间')
     is_shared = db.Column(db.Boolean, nullable=True, default=False, comment='是否共享文章')
-    share_password = db.Column(db.String(64), nullable=True, comment='共享密码')
+    share_password = db.Column(db.String(255), nullable=True, comment='共享密码')
     create_time = db.Column(db.DateTime, default=datetime.now(), nullable=False, comment='创建时间')
     update_time = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now(), nullable=False, comment='更新时间')
     
