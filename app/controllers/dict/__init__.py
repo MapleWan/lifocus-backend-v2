@@ -1,0 +1,1 @@
+from .dict_manager import SingleDictResource, AddDictResource, UserDictResource

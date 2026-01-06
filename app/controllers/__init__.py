@@ -56,3 +56,12 @@ article_ns.add_resource(AddArticleResource, '')
 article_ns.add_resource(CategoryArticleResource, '/category-article')
 
 api.add_namespace(article_ns)
+
+# 字典
+dict_ns = Namespace('dict', description='字典相关接口', path='/dict')
+from .dict import SingleDictResource, AddDictResource, UserDictResource
+dict_ns.add_resource(SingleDictResource, '/<int:dict_id>')
+dict_ns.add_resource(AddDictResource, '')
+dict_ns.add_resource(UserDictResource, '/user-dict')
+
+api.add_namespace(dict_ns)
