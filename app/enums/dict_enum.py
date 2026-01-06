@@ -16,14 +16,3 @@ DICT_SUCCESS_MESSAGE = {
     'DICT_LIST_SUCCESS': '字典列表获取成功',
     'DICT_DETAIL_SUCCESS': '字典详情获取成功',
 }
-
-# 字典类型
-DICT_TYPE = {
-    "LANGUAGE": "语言",
-    "CURRENCY": "货币",
-    "TIMEZONE": "时区",
-    "STATUS": "状态",
-    "GENDER": "性别",
-    "EDUCATION": "学历",
-    "INDUSTRY": "行业",
-}
