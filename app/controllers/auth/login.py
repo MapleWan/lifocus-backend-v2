@@ -42,9 +42,9 @@ class LoginResource(Resource):
 
             user = User.get_user_by_username(args['username'])
             if not user:
-                return {'code': 401, 'message': LOGIN_ERROR_MESSAGE['USER_NOT_FOUND']}, 401
+                return {'code': 400, 'message': LOGIN_ERROR_MESSAGE['USER_NOT_FOUND']}, 400
             if not verify_password(user.password, user.salt, args['password']):
-                return {'code': 401, 'message': LOGIN_ERROR_MESSAGE['PASSWORD_ERROR']}, 401
+                return {'code': 400, 'message': LOGIN_ERROR_MESSAGE['PASSWORD_ERROR']}, 400
             
             token = generate_token(user.id)
             decoded_token = decode_token(token['access_token']) # 解码access_token，用于获取过期时间
