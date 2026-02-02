@@ -132,7 +132,7 @@ class Timeline(db.Model):
 
         # 添加排序功能
         if query_condition and query_condition.get('order_by') is not None and query_condition.get('order_direction') is not None:
-            order_by = query_condition.get('order_by', 'update_time')  # 默认按更新时间排序
+            order_by = query_condition.get('order_by', 'create_time')  # 默认按创建时间排序
             order_direction = query_condition.get('order_direction', 'desc')  # 默认降序
             # 验证排序字段是否有效
             valid_order_fields = ['title', 'importance', 'start_time', 'create_time', 'update_time']

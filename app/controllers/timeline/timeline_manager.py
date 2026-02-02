@@ -172,7 +172,8 @@ class AddTimelineResource(Resource):
                 start_time=datetime.fromisoformat(args['start_time']) if args['start_time'] else datetime.now(),
                 end_time=datetime.fromisoformat(args['end_time']) if args['end_time'] else None
             )
-
+            timeline_item.create_time = datetime.now()
+            timeline_item.update_time = datetime.now()
             success, result = timeline_item.add_timeline()
             if success:
                 return {'code': 200, 'message': TIMELINE_SUCCESS_MESSAGE['TIMELINE_ADD_SUCCESS'], 'data': result.dict()}, 200
@@ -209,8 +210,8 @@ class UserTimelineResource(Resource):
                 parse.add_argument('create_end_time', type=str, required=False, help='创建结束时间')
                 parse.add_argument('update_start_time', type=str, required=False, help='更新开始时间')
                 parse.add_argument('update_end_time', type=str, required=False, help='更新结束时间')
-                parse.add_argument('order_by', type=str, required=False, help='排序字段')
-                parse.add_argument('order_direction', type=str, required=False, help='排序方向')
+                parse.add_argument('order_by', type=str, required=False, default='create_time', help='排序字段')
+                parse.add_argument('order_direction', type=str, required=False, default='asc', help='排序方向')
                 
                 args = parse.parse_args()
                 if args['is_summaried']:
