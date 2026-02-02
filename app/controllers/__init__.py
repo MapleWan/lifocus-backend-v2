@@ -31,6 +31,12 @@ auth_ns.add_resource(LogoutResource, '/logout')
 
 api.add_namespace(auth_ns)
 
+# 用户
+user_ns = Namespace('user', description='用户相关接口', path='/user')
+from .user import UserResource
+user_ns.add_resource(UserResource, '')
+api.add_namespace(user_ns)
+
 # 项目
 project_ns = Namespace('project', description='项目相关接口', path='/project')
 from .project import SingleProjectResource, AddProjectResource, UserProjectResource
