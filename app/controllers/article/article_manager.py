@@ -133,6 +133,8 @@ class AddArticleResource(Resource):
             if not args['content']:
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['CONTENT_EMPTY_ERROR']}, 400
             article = Article(category_id=args['category_id'], type=args['type'], title=args['title'], content=args['content'], status=args['status'])
+            article.create_time = datetime.now()
+            article.update_time = datetime.now()
             is_success, res = article.add_article()
             if is_success: 
                 save_article_to_disk(current_user.username, current_project.name, args['category_full_path'], args['title'], args['content'])    
