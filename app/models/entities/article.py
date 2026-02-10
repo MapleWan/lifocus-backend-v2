@@ -45,7 +45,7 @@ class Article(db.Model):
     # 新增文章
     def add_article(self):
         existing_article = Article.query.filter_by(title=self.title, is_deleted=False).first()
-        if existing_article:
+        if existing_article and existing_article.id == self.id:
             return False, ARTICLE_ERROR_MESSAGE['ALREADY_TITLE_EXIST']
         db.session.add(self)
         db.session.commit()

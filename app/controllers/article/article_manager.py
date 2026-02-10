@@ -51,7 +51,7 @@ class ArticleResource(Resource):
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['TYPE_STATUS_ERROR']}, 400
             
             existing_article = Article.get_article_by_title_and_category_id(args['title'], args['category_id'])
-            if existing_article:
+            if existing_article and existing_article.id != article.id:
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['ALREADY_TITLE_EXIST']}, 400
 
             origin_article_title = article.title

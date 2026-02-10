@@ -14,6 +14,11 @@ article_with_content_model = article_ns.model('ArticleWithContent', {
     'update_time': fields.String(description='文章更新时间'),
 })
 
+category_model = article_ns.model('Category', {
+    'id': fields.Integer(description='分类 ID'),
+    'name': fields.String(description='分类名称')
+})
+
 article_no_content_model = article_ns.model('ArticleNoContent', {
     'id': fields.String(description='文章 ID'),
     'category_id': fields.Integer(description='文章分类 ID'),
@@ -24,6 +29,7 @@ article_no_content_model = article_ns.model('ArticleNoContent', {
     'is_deleted': fields.Boolean(description='文章是否删除'),
     'create_time': fields.String(description='文章创建时间'),
     'update_time': fields.String(description='文章更新时间'),
+    'category': fields.Nested(category_model, description='文章分类')
 })
 
 article_with_content_response_model = article_ns.model('ArticleWithContentResponse', {
