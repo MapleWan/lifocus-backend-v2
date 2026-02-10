@@ -142,6 +142,8 @@ class AddProjectResource(Resource):
                 description=args['description'],
                 status=args['status']
             )
+            project.create_time = datetime.datetime.now()
+            project.update_time = datetime.datetime.now()
             project.add_project()
             make_user_project_dir(user.username, '', project.name)
             return {'code': 200, 'message': PROJECT_SUCCESS_MESSAGE['PROJECT_ADD_SUCCESS'], 'data': project}, 200
