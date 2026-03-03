@@ -56,12 +56,18 @@ api.add_namespace(category_ns)
 
 # 文章
 article_ns = Namespace('article', description='文章相关接口', path='/article')
-from .article import ArticleResource, AddArticleResource, CategoryArticleResource
+from .article import ArticleResource, AddArticleResource, CategoryArticleResource, ShareArticleResource
 article_ns.add_resource(ArticleResource, '/<string:article_id>')
 article_ns.add_resource(AddArticleResource, '')
 article_ns.add_resource(CategoryArticleResource, '/category-article')
 
 api.add_namespace(article_ns)
+
+# 分享（公开接口）
+share_ns = Namespace('share', description='文章分享相关接口（公开）', path='/share')
+share_ns.add_resource(ShareArticleResource, '/<string:article_id>')
+
+api.add_namespace(share_ns)
 
 # 字典
 dict_ns = Namespace('dict', description='字典相关接口', path='/dict')

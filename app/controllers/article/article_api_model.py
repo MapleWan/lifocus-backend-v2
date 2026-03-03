@@ -9,6 +9,7 @@ article_with_content_model = article_ns.model('ArticleWithContent', {
     'content': fields.String(description='文章内容'),
     'status': fields.String(description='文章状态'),
     'is_shared': fields.Boolean(description='文章是否共享'),
+    'share_password': fields.String(description='文章分享密码'),
     'is_deleted': fields.Boolean(description='文章是否删除'),
     'create_time': fields.String(description='文章创建时间'),
     'update_time': fields.String(description='文章更新时间'),
@@ -56,4 +57,20 @@ article_no_content_page_response_model = article_ns.model('ArticleNoContentPageR
     'code': fields.Integer(description='状态码'),
     'message': fields.String(description='提示信息'),
     'data': fields.Nested(article_no_content_page_model, allow_null=True)
+})
+
+# 分享文章内容模型（不包含敏感字段如 share_password、category_id）
+share_article_model = article_ns.model('ShareArticle', {
+    'id': fields.String(description='文章 ID'),
+    'title': fields.String(description='文章标题'),
+    'content': fields.String(description='文章内容'),
+    'type': fields.String(description='文章类型'),
+    'create_time': fields.String(description='创建时间'),
+    'update_time': fields.String(description='更新时间'),
+})
+
+share_article_response_model = article_ns.model('ShareArticleResponse', {
+    'code': fields.Integer(description='状态码'),
+    'message': fields.String(description='响应消息'),
+    'data': fields.Nested(share_article_model, description='分享文章数据', allow_null=True),
 })

@@ -4,7 +4,7 @@ from app.models import Article, User, Project
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.controllers import article_ns
 from app.utils import check_enum, rename_article, del_article_from_disk, save_article_to_disk, valid_password, hash_password, verify_password_with_salt
-from .article_api_model import article_with_content_response_model, article_no_content_response_model, article_no_content_page_response_model
+from .article_api_model import article_with_content_response_model, article_no_content_response_model, article_no_content_page_response_model, share_article_response_model
 from datetime import datetime
 import os
 
@@ -47,7 +47,11 @@ class ArticleResource(Resource):
                 args = parser.parse_args()
             except Exception as e:
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['PARAM_ERROR']}, 400
-            if not check_enum([args['type'], args['status']], [ARTICLE_TYPE, ARTICLE_STATUS]):
+            # if not check_enum([args['type'], args['status']], [ARTICLE_TYPE, ARTICLE_STATUS]):
+            #     return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['TYPE_STATUS_ERROR']}, 400
+            if args['type'] and not check_enum([args['type']], [ARTICLE_TYPE]):
+                return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['TYPE_STATUS_ERROR']}, 400
+            if args['status'] and not check_enum([args['status']], [ARTICLE_STATUS]):
                 return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['TYPE_STATUS_ERROR']}, 400
             
             existing_article = Article.get_article_by_title_and_category_id(args['title'], args['category_id'])
@@ -59,7 +63,7 @@ class ArticleResource(Resource):
             for field in update_fields:
                 if field in args and args[field] != None:
                     if field == 'share_password':
-                        if not valid_password(args['share_password']):
+                        if args['share_password'] and not valid_password(args['share_password']):
                             raise Exception(ARTICLE_ERROR_MESSAGE['PASSWORD_FORMAT_ERROR'])
                         salt, password = hash_password(args['share_password'])
                         args['share_password'] = salt + password
@@ -215,5 +219,51 @@ class CategoryArticleResource(Resource):
                 'total': page_res['total'],
                 'data': page_res['data']
             }}, 200
+        except Exception as e:
+            return {'code': 500, 'message': ARTICLE_ERROR_MESSAGE['COMMON_ERROR'] + ': ' + str(e)}, 500
+
+
+class ShareArticleResource(Resource):
+    @article_ns.doc(description='访问分享文章')
+    @article_ns.marshal_with(share_article_response_model)
+    def post(self, article_id):
+        """
+        访问分享文章
+        :params: password (可选，仅当文章设置了密码时需要)
+        """
+        try:
+            # 1. 查询文章
+            article = Article.get_article_by_id(article_id)
+
+            # 2. 验证文章存在且未删除
+            if not article or article.is_deleted:
+                return {'code': 404, 'message': ARTICLE_ERROR_MESSAGE['NOT_FOUND']}, 404
+
+            # 3. 验证文章已设置为分享状态
+            if not article.is_shared:
+                return {'code': 403, 'message': ARTICLE_ERROR_MESSAGE['NOT_SHARED']}, 403
+
+            # 4. 密码验证（如果设置了密码）
+            if article.share_password:
+                parser = reqparse.RequestParser()
+                parser.add_argument('password', type=str, required=False)
+                parser.add_argument('have_hashed', type=bool, required=True)
+                args = parser.parse_args()
+
+                if not args.get('password'):
+                    return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_REQUIRED']}, 400
+                
+                if args['have_hashed'] and args['password'] != hash_password_with_salt(args['password']):
+                    return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
+                if not verify_password_with_salt(article.share_password, args['password']):
+                    return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
+
+            # 5. 返回文章内容
+            return {
+                'code': 200,
+                'message': ARTICLE_SUCCESS_MESSAGE['SHARE_ACCESS_SUCCESS'],
+                'data': article
+            }, 200
+
         except Exception as e:
             return {'code': 500, 'message': ARTICLE_ERROR_MESSAGE['COMMON_ERROR'] + ': ' + str(e)}, 500
