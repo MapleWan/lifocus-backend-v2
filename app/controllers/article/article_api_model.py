@@ -27,6 +27,7 @@ article_no_content_model = article_ns.model('ArticleNoContent', {
     'title': fields.String(description='文章标题'),
     'status': fields.String(description='文章状态'),
     'is_shared': fields.Boolean(description='文章是否共享'),
+    'share_password': fields.String(description='文章分享密码'),
     'is_deleted': fields.Boolean(description='文章是否删除'),
     'create_time': fields.String(description='文章创建时间'),
     'update_time': fields.String(description='文章更新时间'),

@@ -247,16 +247,17 @@ class ShareArticleResource(Resource):
             if article.share_password:
                 parser = reqparse.RequestParser()
                 parser.add_argument('password', type=str, required=False)
-                parser.add_argument('have_hashed', type=bool, required=True)
+                parser.add_argument('is_hashed', type=bool, required=True)
                 args = parser.parse_args()
 
                 if not args.get('password'):
                     return {'code': 400, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_REQUIRED']}, 400
-                
-                if args['have_hashed'] and args['password'] != hash_password_with_salt(args['password']):
-                    return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
-                if not verify_password_with_salt(article.share_password, args['password']):
-                    return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
+                if args['is_hashed']:
+                    if args['password'] != article.share_password:
+                        return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
+                else:
+                    if not verify_password_with_salt(article.share_password, args['password']):
+                        return {'code': 401, 'message': ARTICLE_ERROR_MESSAGE['SHARE_PASSWORD_INCORRECT']}, 401
 
             # 5. 返回文章内容
             return {
