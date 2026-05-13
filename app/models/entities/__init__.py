@@ -4,3 +4,8 @@ from .category import Category
 from .article import Article
 from .dict import Dict
 from .timeline import Timeline
+from .knowledge_base import KnowledgeBase
+from .document import Document
+from .document_chunk import DocumentChunk
+from .chat_session import ChatSession
+from .chat_message import ChatMessage

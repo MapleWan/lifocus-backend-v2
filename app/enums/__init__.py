@@ -4,3 +4,4 @@ from .category_enum import *
 from .article_enum import *
 from .dict_enum import *
 from .timeline_enum import *
+from .knowledge_enum import *

@@ -86,3 +86,21 @@ timeline_ns.add_resource(AddTimelineResource, '')
 timeline_ns.add_resource(UserTimelineResource, '/user-timeline')
 
 api.add_namespace(timeline_ns)
+
+# 知识库
+knowledge_ns = Namespace('knowledge', description='知识库相关接口', path='/knowledge')
+from .knowledge import (
+    SingleKnowledgeBaseResource, AddKnowledgeBaseResource, UserKnowledgeBaseResource,
+    SingleDocumentResource, UploadDocumentResource, ReprocessDocumentResource, KBDocumentListResource
+)
+knowledge_ns.add_resource(SingleKnowledgeBaseResource, '/<string:kb_id>')
+knowledge_ns.add_resource(AddKnowledgeBaseResource, '')
+knowledge_ns.add_resource(UserKnowledgeBaseResource, '/user-knowledge')
+
+# 文档管理
+knowledge_ns.add_resource(UploadDocumentResource, '/<string:kb_id>/document')
+knowledge_ns.add_resource(SingleDocumentResource, '/<string:kb_id>/document/<string:doc_id>')
+knowledge_ns.add_resource(ReprocessDocumentResource, '/<string:kb_id>/document/<string:doc_id>/reprocess')
+knowledge_ns.add_resource(KBDocumentListResource, '/<string:kb_id>/documents')
+
+api.add_namespace(knowledge_ns)
