@@ -94,3 +94,51 @@ def rename_article(user_name, project_name, category_path, old_article_title, ne
         return True
     else:
         return False
+
+
+def get_attachment_base_dir(user_name, project_name, category_path=None):
+    """
+    获取附件存储的基础目录
+    """
+    category_segment = category_path if category_path else '_root'
+    return os.path.join(user_path, user_name, project_name, category_segment, 'attachments')
+
+
+def save_attachment_to_disk(user_name, project_name, category_path, stored_name, werkzeug_file):
+    """
+    保存附件到磁盘
+    :param user_name: 用户名
+    :param project_name: 项目名
+    :param category_path: 目录路径（可空）
+    :param stored_name: 存储文件名（uuid.ext）
+    :param werkzeug_file: Werkzeug FileStorage 对象
+    :return: (absolute_path, relative_path) 绝对路径和相对于 user_path 的相对路径
+    """
+    base_dir = get_attachment_base_dir(user_name, project_name, category_path)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+    
+    abs_path = os.path.join(base_dir, stored_name)
+    werkzeug_file.save(abs_path)
+    
+    # 相对路径：从 user_path 之后开始
+    rel_path = os.path.relpath(abs_path, user_path)
+    return abs_path, rel_path
+
+
+def del_attachment_from_disk(abs_path):
+    """
+    从磁盘删除附件
+    """
+    if os.path.exists(abs_path):
+        os.remove(abs_path)
+        return True
+    return False
+
+
+def get_attachment_abs_path(user_name, project_name, category_path, stored_name):
+    """
+    获取附件的绝对路径
+    """
+    base_dir = get_attachment_base_dir(user_name, project_name, category_path)
+    return os.path.join(base_dir, stored_name)

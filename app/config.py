@@ -52,6 +52,9 @@ class Config(object):
     REDIS_PORT = os.getenv('REDIS_PORT')
     REDIS_DB = os.getenv('REDIS_DB')
     REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+    
+    # 文件上传配置
+    MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB
 class DevelopmentConfig(Config):
     DEBUG = True
 

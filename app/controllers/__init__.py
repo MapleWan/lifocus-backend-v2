@@ -86,3 +86,13 @@ timeline_ns.add_resource(AddTimelineResource, '')
 timeline_ns.add_resource(UserTimelineResource, '/user-timeline')
 
 api.add_namespace(timeline_ns)
+
+# 附件
+attachment_ns = Namespace('attachment', description='附件相关接口', path='/attachment')
+from .attachment import AttachmentResource, SingleAttachmentResource, AttachmentDownloadResource, AttachmentPreviewResource
+attachment_ns.add_resource(AttachmentResource, '')
+attachment_ns.add_resource(SingleAttachmentResource, '/<string:attachment_id>')
+attachment_ns.add_resource(AttachmentDownloadResource, '/<string:attachment_id>/download')
+attachment_ns.add_resource(AttachmentPreviewResource, '/<string:attachment_id>/preview')
+
+api.add_namespace(attachment_ns)
